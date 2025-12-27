@@ -1,0 +1,36 @@
+{
+  "name": "felix-radio",
+  "version": "1.0.0",
+  "description": "🐱 Felix Radio - Radio recording and STT transcription service",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "pnpm --parallel run dev",
+    "build": "pnpm --recursive run build",
+    "test": "pnpm --recursive run test",
+    "lint": "pnpm --recursive run lint",
+    "format": "prettier --write \"**/*.{ts,tsx,js,jsx,json,md}\"",
+    "clean": "pnpm --recursive run clean && rm -rf node_modules"
+  },
+  "keywords": [
+    "radio",
+    "recording",
+    "stt",
+    "transcription",
+    "cloudflare",
+    "nextjs"
+  ],
+  "author": "Felix Radio Team",
+  "license": "MIT",
+  "engines": {
+    "node": ">=20.0.0",
+    "pnpm": ">=8.0.0"
+  },
+  "devDependencies": {
+    "prettier": "^3.1.1",
+    "typescript": "^5.3.3"
+  }
+}
