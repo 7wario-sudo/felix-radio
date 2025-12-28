@@ -13,10 +13,11 @@ binding = "DB"
 database_name = "felix-radio-db"
 database_id = "local-only"  # Will be updated when deployed to production
 
-# R2 Storage binding (will be configured in Task 13.0)
-# [[r2_buckets]]
-# binding = "R2"
-# bucket_name = "felix-radio-recordings"
+# R2 Storage binding
+[[r2_buckets]]
+binding = "R2"
+bucket_name = "felix-radio-recordings"
+preview_bucket_name = "felix-radio-recordings-dev"  # For local development
 
 # Environment variables (secrets set via wrangler secret put)
 [vars]

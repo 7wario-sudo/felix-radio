@@ -3,7 +3,7 @@ import { cors } from 'hono/cors';
 
 type Bindings = {
   DB: D1Database;
-  // R2: R2Bucket; // Will be uncommented in Task 13.0
+  R2: R2Bucket;
   CLERK_SECRET_KEY: string;
   INTERNAL_API_KEY: string;
 };
