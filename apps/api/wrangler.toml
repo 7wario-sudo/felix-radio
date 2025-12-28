@@ -7,11 +7,11 @@ node_compat = true
 [dev]
 port = 8787
 
-# D1 Database binding (will be created in Task 12.0)
-# [[d1_databases]]
-# binding = "DB"
-# database_name = "felix-radio-db"
-# database_id = "TBD"
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "felix-radio-db"
+database_id = "local-only"  # Will be updated when deployed to production
 
 # R2 Storage binding (will be configured in Task 13.0)
 # [[r2_buckets]]
