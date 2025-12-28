@@ -3,6 +3,7 @@ import { cors } from 'hono/cors';
 import type { Bindings, Variables } from './types';
 import { clerkAuth } from './middleware/auth';
 import { apiKeyAuth } from './middleware/apiKey';
+import schedules from './routes/schedules';
 
 const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
@@ -51,19 +52,20 @@ app.get('/api/auth/me', clerkAuth, (c) => {
   });
 });
 
-// API routes (will be implemented in later tasks)
-app.get('/api/schedules', clerkAuth, (c) => {
-  return c.json({ message: 'Schedules endpoint - to be implemented in Task 15.0' });
-});
+// API routes
+app.route('/api/schedules', schedules);
 
+// Recordings endpoint (will be implemented in Task 16.0)
 app.get('/api/recordings', clerkAuth, (c) => {
   return c.json({ message: 'Recordings endpoint - to be implemented in Task 16.0' });
 });
 
+// Stations endpoint (will be implemented in Task 18.0)
 app.get('/api/stations', clerkAuth, (c) => {
   return c.json({ message: 'Stations endpoint - to be implemented in Task 18.0' });
 });
 
+// Dashboard endpoint (will be implemented in Task 18.0)
 app.get('/api/dashboard/stats', clerkAuth, (c) => {
   return c.json({ message: 'Dashboard endpoint - to be implemented in Task 18.0' });
 });
