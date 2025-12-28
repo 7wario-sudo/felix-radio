@@ -1,14 +1,10 @@
 import { Hono } from 'hono';
 import { cors } from 'hono/cors';
+import type { Bindings, Variables } from './types';
+import { clerkAuth } from './middleware/auth';
+import { apiKeyAuth } from './middleware/apiKey';
 
-type Bindings = {
-  DB: D1Database;
-  R2: R2Bucket;
-  CLERK_SECRET_KEY: string;
-  INTERNAL_API_KEY: string;
-};
-
-const app = new Hono<{ Bindings: Bindings }>();
+const app = new Hono<{ Bindings: Bindings; Variables: Variables }>();
 
 // CORS middleware
 app.use('/*', cors({
@@ -46,24 +42,34 @@ app.get('/', (c) => {
   });
 });
 
+// Test endpoint for Clerk authentication
+app.get('/api/auth/me', clerkAuth, (c) => {
+  const userId = c.get('userId');
+  return c.json({
+    message: 'Authenticated successfully',
+    userId,
+  });
+});
+
 // API routes (will be implemented in later tasks)
-app.get('/api/schedules', (c) => {
+app.get('/api/schedules', clerkAuth, (c) => {
   return c.json({ message: 'Schedules endpoint - to be implemented in Task 15.0' });
 });
 
-app.get('/api/recordings', (c) => {
+app.get('/api/recordings', clerkAuth, (c) => {
   return c.json({ message: 'Recordings endpoint - to be implemented in Task 16.0' });
 });
 
-app.get('/api/stations', (c) => {
+app.get('/api/stations', clerkAuth, (c) => {
   return c.json({ message: 'Stations endpoint - to be implemented in Task 18.0' });
 });
 
-app.get('/api/dashboard/stats', (c) => {
+app.get('/api/dashboard/stats', clerkAuth, (c) => {
   return c.json({ message: 'Dashboard endpoint - to be implemented in Task 18.0' });
 });
 
-app.get('/api/internal/schedules/pending', (c) => {
+// Internal API routes (require API key authentication)
+app.get('/api/internal/schedules/pending', apiKeyAuth, (c) => {
   return c.json({ message: 'Internal API endpoint - to be implemented in Task 18.0' });
 });
 
