@@ -13,23 +13,23 @@ fi
 
 # Check if .env.local exists
 if [ ! -f "apps/web/.env.local" ]; then
-    echo "📝 Creating .env.local with demo credentials..."
+    echo "📝 Creating .env.local with Clerk credentials..."
     cat > apps/web/.env.local << 'EOF'
-# Clerk keys (placeholder - authentication disabled for demo)
-NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_placeholder
-CLERK_SECRET_KEY=sk_test_placeholder
+# Clerk Authentication Keys
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_bGlrZWQtbWFybW9zZXQtOC5jbGVyay5hY2NvdW50cy5kZXYk
+CLERK_SECRET_KEY=sk_test_z2rJXG5lIOFotq2TvjBGBKFA2CdymS0FPLUoJxpVzy
 
 # API Configuration
 NEXT_PUBLIC_API_URL=http://localhost:8787
+
+# Mock Mode (set to 'true' to use mock data)
+NEXT_PUBLIC_USE_MOCK_API=true
 EOF
-    echo "✅ Created apps/web/.env.local"
+    echo "✅ Created apps/web/.env.local with mock mode enabled"
 fi
 
-# Disable Clerk authentication for demo
-if [ -f "apps/web/middleware.ts" ]; then
-    echo "🔓 Disabling authentication middleware for demo..."
-    mv apps/web/middleware.ts apps/web/middleware.ts.disabled 2>/dev/null || true
-fi
+# Note: Clerk authentication is now always enabled
+# Mock mode is controlled via NEXT_PUBLIC_USE_MOCK_API environment variable
 
 # Start development server
 echo ""

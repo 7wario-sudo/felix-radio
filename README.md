@@ -72,28 +72,29 @@ pnpm dev
 ### Development
 
 ```bash
-# Quick Start (Frontend only with demo mode)
-npm run dev:start           # Start development server
-npm run dev:stop            # Stop development server
+# Quick Start - Frontend Only (Mock Mode)
+./scripts/dev-start.sh      # Frontend with mock data and Clerk auth
+./scripts/dev-stop.sh       # Stop all processes
 
-# Or use scripts directly
-./scripts/dev-start.sh      # Auto-configures demo environment
-./scripts/dev-stop.sh       # Cleanup all processes
+# Full Stack Development (Frontend + Backend)
+./scripts/dev-full.sh       # Start both Next.js and Workers API
 
-# Start all services in parallel (when backend is ready)
-pnpm dev
+# Setup Backend API (first time only)
+./scripts/api-dev-setup.sh  # Initialize D1 database
 
-# Start individual services
+# Start Individual Services
 cd apps/web && npm run dev      # Frontend (http://localhost:3000)
 cd apps/api && pnpm dev         # API (http://localhost:8787)
-cd packages/recorder && pnpm dev  # Recording server
+cd packages/recorder && pnpm dev  # Recording server (Vultr VPS)
 ```
 
-**Demo Mode Features:**
-- ✅ Authentication disabled for quick testing
-- ✅ Mock data pre-loaded
-- ✅ All UI features functional
-- ✅ No Clerk or API setup required
+**Development Modes:**
+
+| Mode | Command | Frontend | Backend | Auth | Data |
+|------|---------|----------|---------|------|------|
+| **Mock** | `./scripts/dev-start.sh` | ✅ | ❌ | ✅ Clerk | Mock |
+| **Full Stack** | `./scripts/dev-full.sh` | ✅ | ✅ | ✅ Clerk | Real API |
+| **Production** | Deploy to Cloudflare | ✅ | ✅ | ✅ Clerk | Production |
 
 ## 📁 Project Structure
 
