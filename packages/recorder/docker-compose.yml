@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  recorder:
+    build: .
+    container_name: felix-recorder
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Seoul
+      - NODE_ENV=production
+    volumes:
+      - /tmp/felix-recordings:/tmp/felix-recordings
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
