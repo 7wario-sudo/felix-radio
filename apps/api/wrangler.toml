@@ -11,7 +11,7 @@ port = 8787
 [[d1_databases]]
 binding = "DB"
 database_name = "felix-radio-db"
-database_id = "local-only"  # Will be updated when deployed to production
+database_id = "43b83794-5a19-459c-bacf-184c11161150"
 
 # R2 Storage binding
 [[r2_buckets]]
