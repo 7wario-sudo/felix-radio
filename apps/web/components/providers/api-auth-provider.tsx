@@ -1,7 +1,7 @@
 'use client';
 
 import { useAuth } from '@clerk/nextjs';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { apiClient } from '@/lib/api';
 
 // Check if we're in mock mode
@@ -17,7 +17,8 @@ const USE_MOCK_MODE = process.env.NEXT_PUBLIC_USE_MOCK_API === 'true';
  * In production mode, it injects Clerk's getToken function into the API client.
  */
 export function ApiAuthProvider({ children }: { children: React.ReactNode }) {
-  const { getToken } = useAuth();
+  const { getToken, isLoaded } = useAuth();
+  const [isReady, setIsReady] = useState(USE_MOCK_MODE); // Mock mode is immediately ready
 
   useEffect(() => {
     // Skip auth setup in mock mode
@@ -26,11 +27,22 @@ export function ApiAuthProvider({ children }: { children: React.ReactNode }) {
       return;
     }
 
+    // Wait for Clerk to be loaded
+    if (!isLoaded) {
+      return;
+    }
+
     // Inject Clerk's getToken function into the API client
     // This allows the API client to fetch JWT tokens on-demand for each request
     apiClient.setTokenGetter(getToken);
     console.log('API client configured with Clerk authentication');
-  }, [getToken]);
+    setIsReady(true);
+  }, [getToken, isLoaded]);
+
+  // Don't render children until API client is configured
+  if (!isReady) {
+    return null;
+  }
 
   return <>{children}</>;
 }

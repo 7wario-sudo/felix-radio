@@ -28,13 +28,27 @@ export async function clerkAuth(
   next: Next
 ) {
   const authHeader = c.req.header('Authorization');
-  const token = extractToken(authHeader);
+  console.log('[Auth Middleware] Authorization header:', authHeader ? 'EXISTS' : 'MISSING');
+
+  // Try to get token from header first, then query parameter
+  let token = extractToken(authHeader);
+
+  if (!token) {
+    // Check query parameter for download endpoints
+    const queryToken = c.req.query('token');
+    if (queryToken) {
+      token = queryToken;
+      console.log('[Auth Middleware] Using query parameter token');
+    }
+  }
+
+  console.log('[Auth Middleware] Extracted token:', token ? 'YES (length: ' + token.length + ')' : 'NO');
 
   if (!token) {
     return c.json(
       {
         error: 'Unauthorized',
-        message: 'Missing or invalid Authorization header',
+        message: 'Missing or invalid Authorization header or token parameter',
       },
       401
     );
@@ -59,8 +73,9 @@ export async function clerkAuth(
       secretKey,
     });
 
-    // Extract user ID from the token payload
+    // Extract user ID and email from the token payload
     const userId = payload.sub;
+    const email = payload.email as string | undefined;
 
     if (!userId) {
       return c.json(
@@ -72,8 +87,9 @@ export async function clerkAuth(
       );
     }
 
-    // Attach userId to context for downstream handlers
+    // Attach userId and email to context for downstream handlers
     c.set('userId', userId);
+    c.set('userEmail', email || '');
 
     await next();
   } catch (error) {

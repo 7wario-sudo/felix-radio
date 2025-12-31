@@ -87,16 +87,22 @@ export async function recordStream(
 /**
  * Generate filename based on program name and timestamp
  * Format: {program}_{YYYYMMDD-HHMM}.mp3
+ * Uses Korea Standard Time (KST, UTC+9)
  */
 export function generateFilename(
   programName: string,
   timestamp: Date
 ): string {
-  const year = timestamp.getFullYear();
-  const month = String(timestamp.getMonth() + 1).padStart(2, '0');
-  const day = String(timestamp.getDate()).padStart(2, '0');
-  const hour = String(timestamp.getHours()).padStart(2, '0');
-  const minute = String(timestamp.getMinutes()).padStart(2, '0');
+  // Convert to KST (UTC+9)
+  const kstOffset = 9 * 60; // 9 hours in minutes
+  const utcTime = timestamp.getTime() + (timestamp.getTimezoneOffset() * 60000);
+  const kstTime = new Date(utcTime + (kstOffset * 60000));
+
+  const year = kstTime.getFullYear();
+  const month = String(kstTime.getMonth() + 1).padStart(2, '0');
+  const day = String(kstTime.getDate()).padStart(2, '0');
+  const hour = String(kstTime.getHours()).padStart(2, '0');
+  const minute = String(kstTime.getMinutes()).padStart(2, '0');
 
   const dateStr = `${year}${month}${day}-${hour}${minute}`;
   const safeProgramName = programName.replace(/[^a-zA-Z0-9가-힣_-]/g, '_');

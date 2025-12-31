@@ -187,20 +187,39 @@ internal.put('/recordings/:id/status', async (c) => {
     return c.json({ error: 'Invalid JSON body' }, 400);
   }
 
-  const { status, error_message } = body;
+  const { status, file_size_bytes, error_message } = body;
 
   if (!status || !['pending', 'recording', 'completed', 'failed'].includes(status)) {
     return c.json({ error: 'status must be one of: pending, recording, completed, failed' }, 400);
   }
 
   try {
+    // Build dynamic update query to include file_size_bytes if provided
+    const updates: string[] = ['status = ?', 'updated_at = CURRENT_TIMESTAMP'];
+    const params: any[] = [status];
+
+    if (file_size_bytes !== undefined && typeof file_size_bytes === 'number') {
+      updates.push('file_size_bytes = ?');
+      params.push(file_size_bytes);
+    }
+
+    if (error_message !== undefined) {
+      updates.push('error_message = ?');
+      params.push(error_message);
+    } else {
+      updates.push('error_message = ?');
+      params.push(null);
+    }
+
+    params.push(recordingId);
+
     const result = await db
       .prepare(`
         UPDATE recordings
-        SET status = ?, error_message = ?, updated_at = CURRENT_TIMESTAMP
+        SET ${updates.join(', ')}
         WHERE id = ?
       `)
-      .bind(status, error_message || null, recordingId)
+      .bind(...params)
       .run();
 
     if (result.meta.changes === 0) {

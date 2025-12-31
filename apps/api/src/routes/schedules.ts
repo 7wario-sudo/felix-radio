@@ -11,6 +11,7 @@ import {
   createSchedule,
   updateSchedule,
   deleteSchedule,
+  upsertUser,
 } from '../db/queries';
 
 const schedules = new Hono<{ Bindings: Bindings; Variables: Variables }>();
@@ -29,9 +30,29 @@ schedules.get('/', async (c) => {
   try {
     const results = await getSchedules(db, userId);
 
+    // Transform results to include station object
+    const schedules = results.map((row: any) => ({
+      id: row.id,
+      user_id: row.user_id,
+      station_id: row.station_id,
+      program_name: row.program_name,
+      days_of_week: row.days_of_week,
+      start_time: row.start_time,
+      duration_mins: row.duration_mins,
+      is_active: row.is_active,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      station: row.station_name ? {
+        id: row.station_id,
+        name: row.station_name,
+        stream_url: row.station_stream_url,
+        is_active: row.station_is_active,
+      } : undefined,
+    }));
+
     return c.json({
-      schedules: results,
-      total: results.length,
+      schedules,
+      total: schedules.length,
     });
   } catch (error) {
     console.error('Error fetching schedules:', error);
@@ -78,6 +99,7 @@ schedules.get('/:id', async (c) => {
  */
 schedules.post('/', async (c) => {
   const userId = c.get('userId');
+  const userEmail = c.get('userEmail');
   const db = c.env.DB;
 
   let body;
@@ -126,6 +148,9 @@ schedules.post('/', async (c) => {
   }
 
   try {
+    // Ensure user exists in database
+    await upsertUser(db, userId, userEmail);
+
     const scheduleId = await createSchedule(db, userId, {
       station_id,
       program_name,
@@ -135,7 +160,27 @@ schedules.post('/', async (c) => {
       is_active: is_active ?? true,
     });
 
-    const schedule = await getScheduleById(db, scheduleId, userId);
+    const row: any = await getScheduleById(db, scheduleId, userId);
+
+    // Transform result to include station object
+    const schedule = {
+      id: row.id,
+      user_id: row.user_id,
+      station_id: row.station_id,
+      program_name: row.program_name,
+      days_of_week: row.days_of_week,
+      start_time: row.start_time,
+      duration_mins: row.duration_mins,
+      is_active: row.is_active,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      station: row.station_name ? {
+        id: row.station_id,
+        name: row.station_name,
+        stream_url: row.station_stream_url,
+        is_active: row.station_is_active,
+      } : undefined,
+    };
 
     return c.json(
       {
@@ -229,7 +274,27 @@ schedules.put('/:id', async (c) => {
       return c.json({ error: 'Schedule not found or no changes made' }, 404);
     }
 
-    const schedule = await getScheduleById(db, scheduleId, userId);
+    const row: any = await getScheduleById(db, scheduleId, userId);
+
+    // Transform result to include station object
+    const schedule = {
+      id: row.id,
+      user_id: row.user_id,
+      station_id: row.station_id,
+      program_name: row.program_name,
+      days_of_week: row.days_of_week,
+      start_time: row.start_time,
+      duration_mins: row.duration_mins,
+      is_active: row.is_active,
+      created_at: row.created_at,
+      updated_at: row.updated_at,
+      station: row.station_name ? {
+        id: row.station_id,
+        name: row.station_name,
+        stream_url: row.station_stream_url,
+        is_active: row.station_is_active,
+      } : undefined,
+    };
 
     return c.json({
       message: 'Schedule updated successfully',

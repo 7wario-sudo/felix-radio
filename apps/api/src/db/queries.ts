@@ -13,11 +13,22 @@ export async function getSchedules(
   userId: string
 ): Promise<Schedule[]> {
   const { results } = await db
-    .prepare('SELECT * FROM schedules WHERE user_id = ? ORDER BY created_at DESC')
+    .prepare(`
+      SELECT
+        s.*,
+        rs.id as station_id,
+        rs.name as station_name,
+        rs.stream_url as station_stream_url,
+        rs.is_active as station_is_active
+      FROM schedules s
+      LEFT JOIN radio_stations rs ON s.station_id = rs.id
+      WHERE s.user_id = ?
+      ORDER BY s.created_at DESC
+    `)
     .bind(userId)
     .all();
 
-  return results as Schedule[];
+  return results as unknown as Schedule[];
 }
 
 export async function getScheduleById(
@@ -26,7 +37,17 @@ export async function getScheduleById(
   userId: string
 ): Promise<Schedule | null> {
   const result = await db
-    .prepare('SELECT * FROM schedules WHERE id = ? AND user_id = ?')
+    .prepare(`
+      SELECT
+        s.*,
+        rs.id as station_id,
+        rs.name as station_name,
+        rs.stream_url as station_stream_url,
+        rs.is_active as station_is_active
+      FROM schedules s
+      LEFT JOIN radio_stations rs ON s.station_id = rs.id
+      WHERE s.id = ? AND s.user_id = ?
+    `)
     .bind(scheduleId, userId)
     .first();
 
@@ -149,15 +170,22 @@ export async function getRecordings(
 ): Promise<Recording[]> {
   const { results } = await db
     .prepare(`
-      SELECT * FROM recordings
-      WHERE user_id = ?
-      ORDER BY recorded_at DESC
+      SELECT
+        r.*,
+        rs.id as station_id,
+        rs.name as station_name,
+        rs.stream_url as station_stream_url,
+        rs.is_active as station_is_active
+      FROM recordings r
+      LEFT JOIN radio_stations rs ON r.station_id = rs.id
+      WHERE r.user_id = ?
+      ORDER BY r.recorded_at DESC
       LIMIT ? OFFSET ?
     `)
     .bind(userId, limit, offset)
     .all();
 
-  return results as Recording[];
+  return results as unknown as Recording[];
 }
 
 export async function getRecordingById(
@@ -197,7 +225,7 @@ export async function getActiveStations(
     .prepare('SELECT * FROM radio_stations WHERE is_active = 1 ORDER BY name')
     .all();
 
-  return results as RadioStation[];
+  return results as unknown as RadioStation[];
 }
 
 export async function getStationById(

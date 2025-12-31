@@ -24,19 +24,21 @@ import {
 import { ScheduleForm } from '@/components/schedules/schedule-form';
 import { Plus, Edit, Trash2, Loader2 } from 'lucide-react';
 import { apiClient } from '@/lib/api';
-import { Schedule } from '@/lib/types';
+import { Schedule, RadioStation } from '@/lib/types';
 import { formatDaysOfWeek, parseDaysOfWeek, formatDurationMinutes } from '@/lib/utils';
 import { toast } from 'sonner';
 
 export default function SchedulesPage() {
   const [schedules, setSchedules] = useState<Schedule[]>([]);
+  const [stations, setStations] = useState<RadioStation[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingSchedule, setEditingSchedule] = useState<Schedule | undefined>();
 
-  // Load schedules on mount
+  // Load schedules and stations on mount
   useEffect(() => {
     loadSchedules();
+    loadStations();
   }, []);
 
   const loadSchedules = async () => {
@@ -49,6 +51,15 @@ export default function SchedulesPage() {
       console.error('Failed to load schedules:', error);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const loadStations = async () => {
+    try {
+      const data = await apiClient.getStations();
+      setStations(data);
+    } catch (error) {
+      console.error('Failed to load stations:', error);
     }
   };
 
@@ -81,7 +92,10 @@ export default function SchedulesPage() {
 
   const handleToggle = async (id: number) => {
     try {
-      const updated = await apiClient.toggleScheduleActive(id);
+      const schedule = schedules.find((s) => s.id === id);
+      if (!schedule) return;
+
+      const updated = await apiClient.toggleScheduleActive(id, schedule.is_active);
       setSchedules(schedules.map((s) => (s.id === updated.id ? updated : s)));
       toast.success('스케줄 상태가 변경되었습니다');
     } catch (error) {
@@ -141,6 +155,7 @@ export default function SchedulesPage() {
             </DialogHeader>
             <ScheduleForm
               schedule={editingSchedule}
+              stations={stations}
               onSubmit={editingSchedule ? handleUpdate : handleCreate}
               onCancel={() => {
                 setIsDialogOpen(false);

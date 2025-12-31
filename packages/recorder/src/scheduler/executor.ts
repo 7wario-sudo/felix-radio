@@ -74,8 +74,8 @@ export async function executeRecording(
     // Upload to R2
     await r2Client.uploadFile(outputPath, r2Key);
 
-    // Update recording status to completed
-    await apiClient.updateRecordingStatus(recordingId, 'completed');
+    // Update recording status to completed with file size
+    await apiClient.updateRecordingStatus(recordingId, 'completed', undefined, fileStats.size);
 
     logger.info('Recording job completed successfully', {
       recordingId,

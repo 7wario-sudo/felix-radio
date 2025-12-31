@@ -240,7 +240,57 @@ bucket_name = "felix-radio-recordings"
 
 ## 5. Running Locally
 
-### 5.1 Start All Services
+### 5.1 Quick Start (Mock Mode)
+
+The easiest way to start local development is using the provided scripts:
+
+```bash
+# Start frontend with mock data (no API server needed)
+./scripts/dev-start.sh
+
+# Access application
+# http://localhost:3000
+```
+
+This mode is ideal for:
+- Frontend UI/UX development
+- Component styling and layout
+- Testing with predefined mock data
+- Quick iterations without backend setup
+
+**Stop servers:**
+```bash
+./scripts/dev-stop.sh
+```
+
+### 5.2 Full Stack Development (Real API)
+
+To develop with the actual API server:
+
+```bash
+# Start frontend + API server
+./scripts/dev-start.sh --with-api
+
+# This will:
+# 1. Start Wrangler API server on http://localhost:8787
+# 2. Wait for API to be ready
+# 3. Start Next.js on http://localhost:3000 (with mock mode disabled)
+```
+
+**Check API logs:**
+```bash
+tail -f /tmp/felix-api.log
+```
+
+**Stop all servers:**
+```bash
+./scripts/dev-stop.sh
+# Stops both Web (port 3000) and API (port 8787)
+```
+
+### 5.3 Manual Service Control
+
+If you prefer manual control over each service:
 
 **Terminal 1 - Frontend:**
 ```bash
@@ -256,29 +306,42 @@ npm run dev
 # http://localhost:8787
 ```
 
-**Terminal 3 - Recorder (Optional):**
-```bash
-cd packages/recorder
-npm run dev
-# Scheduler starts polling every 1 minute
-```
+**Note:** Recorder server is NOT included in local development setup. It should only run on the production Vultr server for these reasons:
+- Requires actual radio stream access
+- Long-running recording jobs (not suitable for dev interruptions)
+- R2 storage credentials needed
+- Schedule-based execution makes local testing impractical
 
-### 5.2 Development Workflow
+To test recording functionality, use the production Vultr server or mock the recording data through the API.
 
-**Frontend Development:**
-- Hot reload enabled
-- Clerk authentication works with test keys
-- API calls go to `http://localhost:8787`
+### 5.4 Development Workflow
+
+**Frontend Development (Mock Mode):**
+- Fast hot reload
+- No backend dependencies
+- Predefined data for testing UI
+- Clerk authentication with test credentials
+
+**Frontend Development (Real API):**
+- Use `./scripts/dev-start.sh --with-api`
+- Test actual API integration
+- Clerk authentication with local D1 database
+- Create/modify real data
 
 **API Development:**
-- Wrangler uses Miniflare for local D1/R2
+- Wrangler uses Miniflare for local D1/R2 simulation
 - Changes auto-reload with `--watch`
-- Test with curl or Postman
+- Test with curl, Postman, or frontend
+- Local D1 database persists in `.wrangler/state/`
 
-**Recorder Development:**
-- Use `ts-node-dev` for hot reload
-- Test recording with manual schedule trigger
-- Mock Whisper API in development (optional)
+**Environment Modes:**
+
+| Mode | Command | Use Case |
+|------|---------|----------|
+| Mock | `./scripts/dev-start.sh` | Fast UI development |
+| Real API | `./scripts/dev-start.sh --with-api` | Full-stack development |
+| API Only | `cd apps/api && npm run dev` | API testing |
+| Frontend Only | `cd apps/web && npm run dev` | With custom API URL |
 
 ---
 

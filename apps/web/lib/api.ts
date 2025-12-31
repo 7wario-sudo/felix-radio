@@ -51,7 +51,9 @@ class ApiClient {
     }
 
     try {
-      return await this.getToken();
+      const token = await this.getToken();
+      console.log('[API Client] Token obtained:', token ? 'YES (length: ' + token.length + ')' : 'NO');
+      return token;
     } catch (error) {
       console.error('Failed to get auth token:', error);
       return null;
@@ -203,7 +205,7 @@ class ApiClient {
   /**
    * Toggle schedule active status
    */
-  async toggleScheduleActive(id: number): Promise<Schedule> {
+  async toggleScheduleActive(id: number, currentState: boolean): Promise<Schedule> {
     if (this.useMock) {
       await new Promise((resolve) => setTimeout(resolve, 300));
 
@@ -221,10 +223,12 @@ class ApiClient {
       return mockSchedules[index];
     }
 
-    return this.fetch<Schedule>(`/api/schedules/${id}`, {
+    const response = await this.fetch<{ message: string; schedule: Schedule }>(`/api/schedules/${id}`, {
       method: 'PUT',
-      body: JSON.stringify({ is_active: undefined }), // Toggle on server
+      body: JSON.stringify({ is_active: !currentState }),
     });
+
+    return response.schedule;
   }
 
   // ==================== Recording Methods ====================
@@ -319,8 +323,12 @@ class ApiClient {
       return '/mock-audio.mp3'; // Return mock audio file
     }
 
-    // Download endpoint returns the file directly, not JSON
-    return `${this.baseUrl}/api/recordings/${id}/download`;
+    // Get auth token
+    const token = await this.getAuthToken();
+
+    // Return download URL with token in query param
+    // The endpoint returns the file directly, so we construct the URL with auth
+    return `${this.baseUrl}/api/recordings/${id}/download?token=${encodeURIComponent(token || '')}`;
   }
 
   // ==================== STT Methods ====================
@@ -416,7 +424,21 @@ class ApiClient {
       return { ...mockDashboardStats };
     }
 
-    return this.fetch<DashboardStats>('/api/dashboard/stats');
+    const response = await this.fetch<{
+      total_recordings: number;
+      active_schedules: number;
+      storage_used_bytes: number;
+      recent_recordings: any[];
+      next_schedule: any;
+    }>('/api/dashboard/stats');
+
+    // Transform API response to match frontend types
+    return {
+      total_recordings: response.total_recordings,
+      active_schedules: response.active_schedules,
+      storage_used_gb: response.storage_used_bytes / (1024 * 1024 * 1024),
+      recent_activity_count: response.recent_recordings.length,
+    };
   }
 
   /**

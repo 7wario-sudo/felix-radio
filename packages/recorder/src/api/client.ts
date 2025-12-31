@@ -87,20 +87,28 @@ export class WorkersAPIClient {
   async updateRecordingStatus(
     recordingId: number,
     status: 'pending' | 'recording' | 'completed' | 'failed',
-    errorMessage?: string
+    errorMessage?: string,
+    fileSizeBytes?: number
   ): Promise<void> {
     logger.debug('Updating recording status', {
       recordingId,
       status,
       errorMessage,
+      fileSizeBytes,
     });
+
+    const payload: any = {
+      status,
+      error_message: errorMessage,
+    };
+
+    if (fileSizeBytes !== undefined) {
+      payload.file_size_bytes = fileSizeBytes;
+    }
 
     await this.request(`/api/internal/recordings/${recordingId}/status`, {
       method: 'PUT',
-      body: JSON.stringify({
-        status,
-        error_message: errorMessage,
-      }),
+      body: JSON.stringify(payload),
     });
 
     logger.info(`Recording ${recordingId} status updated to ${status}`);

@@ -177,7 +177,11 @@ export function ScheduleForm({ schedule, stations = mockStations, onSubmit, onCa
                   min={1}
                   max={240}
                   {...field}
-                  onChange={(e) => field.onChange(parseInt(e.target.value))}
+                  value={field.value || ''}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    field.onChange(value === '' ? undefined : parseInt(value, 10));
+                  }}
                 />
               </FormControl>
               <FormDescription>녹음할 시간을 분 단위로 입력하세요 (최대 240분)</FormDescription>

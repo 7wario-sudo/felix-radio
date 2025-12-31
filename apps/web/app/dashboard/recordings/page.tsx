@@ -65,10 +65,18 @@ export default function RecordingsPage() {
     return filteredRecordings.slice(startIndex, startIndex + itemsPerPage);
   }, [filteredRecordings, currentPage]);
 
-  const handleDownload = (recording: Recording) => {
-    toast.info(`${recording.program_name} 다운로드를 시작합니다 (모의)`, {
-      description: `파일: ${recording.audio_file_path}`,
-    });
+  const handleDownload = async (recording: Recording) => {
+    try {
+      const downloadUrl = await apiClient.getRecordingDownloadUrl(recording.id);
+
+      // Open download URL in new tab
+      window.open(downloadUrl, '_blank');
+
+      toast.success(`${recording.program_name} 다운로드를 시작합니다`);
+    } catch (error) {
+      toast.error('다운로드 URL을 가져오는데 실패했습니다');
+      console.error('Failed to get download URL:', error);
+    }
   };
 
   const handleResetFilters = () => {
