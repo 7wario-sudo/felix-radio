@@ -13,19 +13,45 @@ fi
 
 # Parse command line arguments
 WITH_API=false
+SKIP_INSTALL=false
 for arg in "$@"; do
     case $arg in
         --with-api)
             WITH_API=true
             shift
             ;;
+        --skip-install)
+            SKIP_INSTALL=true
+            shift
+            ;;
         *)
             echo "❌ Unknown argument: $arg"
-            echo "Usage: ./scripts/dev-start.sh [--with-api]"
+            echo "Usage: ./scripts/dev-start.sh [--with-api] [--skip-install]"
             exit 1
             ;;
     esac
 done
+
+# Check for uncommitted changes
+if [ -n "$(git status --porcelain)" ]; then
+    echo "⚠️  Warning: You have uncommitted changes"
+    echo ""
+fi
+
+# Install/update dependencies if needed
+if [ "$SKIP_INSTALL" = false ]; then
+    echo "📦 Checking dependencies..."
+
+    # Check if node_modules exists and package.json was modified
+    if [ ! -d "node_modules" ] || [ "package.json" -nt "node_modules" ]; then
+        echo "   📥 Installing dependencies..."
+        pnpm install --silent
+        echo "   ✅ Dependencies installed"
+    else
+        echo "   ✅ Dependencies up to date"
+    fi
+    echo ""
+fi
 
 # Create or update .env.local
 if [ "$WITH_API" = true ]; then
@@ -43,9 +69,9 @@ NEXT_PUBLIC_USE_MOCK_API=false
 EOF
     echo "✅ Created apps/web/.env.local with real API mode"
 else
-    if [ ! -f "apps/web/.env.local" ]; then
-        echo "📝 Creating .env.local with mock mode..."
-        cat > apps/web/.env.local << 'EOF'
+    # Always regenerate .env.local in mock mode to ensure correct settings
+    echo "📝 Creating .env.local with mock mode..."
+    cat > apps/web/.env.local << 'EOF'
 # Clerk Authentication Keys
 NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=pk_test_bGlrZWQtbWFybW9zZXQtOC5jbGVyay5hY2NvdW50cy5kZXYk
 CLERK_SECRET_KEY=sk_test_z2rJXG5lIOFotq2TvjBGBKFA2CdymS0FPLUoJxpVzy
@@ -56,8 +82,7 @@ NEXT_PUBLIC_API_URL=http://localhost:8787
 # Mock Mode (set to 'true' to use mock data)
 NEXT_PUBLIC_USE_MOCK_API=true
 EOF
-        echo "✅ Created apps/web/.env.local with mock mode enabled"
-    fi
+    echo "✅ Created apps/web/.env.local with mock mode enabled"
 fi
 
 # Start API server if --with-api flag is set
@@ -65,6 +90,17 @@ if [ "$WITH_API" = true ]; then
     echo ""
     echo "🔧 Starting API server (Wrangler)..."
     echo ""
+
+    # Clean up old API server if running
+    if [ -f "/tmp/felix-api.pid" ]; then
+        OLD_API_PID=$(cat /tmp/felix-api.pid)
+        if ps -p $OLD_API_PID > /dev/null 2>&1; then
+            echo "   🧹 Stopping old API server..."
+            kill $OLD_API_PID 2>/dev/null
+            sleep 1
+        fi
+        rm /tmp/felix-api.pid
+    fi
 
     # Start API server in background
     cd apps/api && pnpm dev > /tmp/felix-api.log 2>&1 &
@@ -88,6 +124,14 @@ if [ "$WITH_API" = true ]; then
     done
 
     cd ../..
+    echo ""
+fi
+
+# Clean up old Next.js cache if needed (helps with code changes)
+if [ -d "apps/web/.next" ]; then
+    echo "🧹 Cleaning Next.js cache for fresh start..."
+    rm -rf apps/web/.next
+    echo "✅ Cache cleaned"
     echo ""
 fi
 
