@@ -29,16 +29,32 @@ else
     echo "✅ API server stopped successfully"
 fi
 
-# Clean up PID file
+# Clean up PID files
 if [ -f "/tmp/felix-api.pid" ]; then
     rm /tmp/felix-api.pid
-    echo "🧹 Cleaned up PID file"
+    echo "🧹 Cleaned up API PID file"
 fi
 
-# Clean up log file
+if [ -f "/tmp/felix-tunnel.pid" ]; then
+    TUNNEL_PID=$(cat /tmp/felix-tunnel.pid)
+    if [ ! -z "$TUNNEL_PID" ]; then
+        echo "🛑 Stopping Cloudflare Tunnel (PID: $TUNNEL_PID)..."
+        kill -9 $TUNNEL_PID 2>/dev/null
+        echo "✅ Tunnel stopped successfully"
+    fi
+    rm /tmp/felix-tunnel.pid
+    echo "🧹 Cleaned up tunnel PID file"
+fi
+
+# Clean up log files
 if [ -f "/tmp/felix-api.log" ]; then
     rm /tmp/felix-api.log
-    echo "🧹 Cleaned up log file"
+    echo "🧹 Cleaned up API log file"
+fi
+
+if [ -f "/tmp/felix-tunnel.log" ]; then
+    rm /tmp/felix-tunnel.log
+    echo "🧹 Cleaned up tunnel log file"
 fi
 
 # Also kill any node processes running next dev

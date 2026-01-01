@@ -265,7 +265,53 @@ This mode is ideal for:
 ./scripts/dev-stop.sh
 ```
 
-### 5.2 Mock Mode (Optional)
+### 5.2 Development with Production Recorder (Tunnel Mode)
+
+To develop locally while using the production recorder server on Vultr:
+
+```bash
+# Start with Cloudflare Tunnel
+./scripts/dev-start.sh --tunnel
+
+# This will:
+# 1. Start local API server on http://localhost:8787
+# 2. Create a Cloudflare Tunnel exposing your local API
+# 3. Display a public tunnel URL (e.g., https://abc-def.trycloudflare.com)
+# 4. Start Next.js on http://localhost:3000
+```
+
+**Configure the recorder server:**
+
+```bash
+# Get the tunnel URL from the output, then run:
+./scripts/tunnel-setup-recorder.sh <tunnel-url>
+
+# Example:
+./scripts/tunnel-setup-recorder.sh https://abc-def-123.trycloudflare.com
+```
+
+This mode allows you to:
+- Test with your local D1 database
+- Use the production recorder server for actual recordings
+- Verify recording functionality end-to-end
+- Test file naming, station display, and other recorder features
+
+**Important Notes:**
+- Keep your local server running while testing
+- If you restart dev-start.sh, the tunnel URL changes (you'll need to reconfigure the recorder)
+- Don't forget to restore the production API URL on the recorder when done
+
+**Restore production configuration:**
+
+```bash
+ssh root@158.247.206.183
+cd felix-radio/packages/recorder
+# Edit .env and change WORKERS_API_URL back to:
+# WORKERS_API_URL=https://felix-radio-api.7wario.workers.dev
+docker-compose restart
+```
+
+### 5.3 Mock Mode (Optional)
 
 To develop with mock data only (no API server needed):
 
@@ -288,7 +334,7 @@ tail -f /tmp/felix-api.log
 # Stops both Web (port 3000) and API (port 8787)
 ```
 
-### 5.3 Manual Service Control
+### 5.4 Manual Service Control
 
 If you prefer manual control over each service:
 
@@ -314,16 +360,25 @@ npm run dev
 
 To test recording functionality, use the production Vultr server or mock the recording data through the API.
 
-### 5.4 Development Workflow
+### 5.5 Development Workflow
 
-**Frontend Development (Real API - Default):**
+**Full-Stack Development (Local API):**
 - Use `./scripts/dev-start.sh` (default mode)
 - Test actual API integration
 - Clerk authentication with local D1 database
 - Create/modify real data
 - Fast hot reload with real backend
+- No actual recordings (recorder not running locally)
 
-**Frontend Development (Mock Mode - Optional):**
+**Full-Stack with Recorder (Tunnel Mode):**
+- Use `./scripts/dev-start.sh --tunnel`
+- Test complete recording workflow
+- Local D1 database + production recorder server
+- Verify file naming, station display, file size
+- End-to-end feature testing
+- Configure recorder with `./scripts/tunnel-setup-recorder.sh <url>`
+
+**Frontend Development (Mock Mode):**
 - Use `./scripts/dev-start.sh --mock`
 - No backend dependencies
 - Predefined data for testing UI
@@ -340,7 +395,8 @@ To test recording functionality, use the production Vultr server or mock the rec
 
 | Mode | Command | Use Case |
 |------|---------|----------|
-| Real API (Default) | `./scripts/dev-start.sh` | Full-stack development |
+| Local API (Default) | `./scripts/dev-start.sh` | Full-stack development without recordings |
+| Tunnel Mode | `./scripts/dev-start.sh --tunnel` | Full-stack + production recorder |
 | Mock | `./scripts/dev-start.sh --mock` | Fast UI-only development |
 | API Only | `cd apps/api && npm run dev` | API testing |
 | Frontend Only | `cd apps/web && npm run dev` | With custom API URL |

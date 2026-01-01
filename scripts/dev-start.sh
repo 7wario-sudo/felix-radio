@@ -14,6 +14,7 @@ fi
 # Parse command line arguments
 WITH_API=true  # Default to using real API
 SKIP_INSTALL=false
+WITH_TUNNEL=false
 for arg in "$@"; do
     case $arg in
         --mock)
@@ -24,9 +25,13 @@ for arg in "$@"; do
             SKIP_INSTALL=true
             shift
             ;;
+        --tunnel)
+            WITH_TUNNEL=true
+            shift
+            ;;
         *)
             echo "❌ Unknown argument: $arg"
-            echo "Usage: ./scripts/dev-start.sh [--mock] [--skip-install]"
+            echo "Usage: ./scripts/dev-start.sh [--mock] [--skip-install] [--tunnel]"
             exit 1
             ;;
     esac
@@ -126,6 +131,54 @@ if [ "$WITH_API" = true ]; then
     echo ""
 fi
 
+# Start Cloudflare Tunnel if --tunnel flag is set
+if [ "$WITH_TUNNEL" = true ]; then
+    echo ""
+    echo "🌐 Starting Cloudflare Tunnel for local API..."
+    echo ""
+
+    # Clean up old tunnel if running
+    if [ -f "/tmp/felix-tunnel.pid" ]; then
+        OLD_TUNNEL_PID=$(cat /tmp/felix-tunnel.pid)
+        if ps -p $OLD_TUNNEL_PID > /dev/null 2>&1; then
+            echo "   🧹 Stopping old tunnel..."
+            kill $OLD_TUNNEL_PID 2>/dev/null
+            sleep 1
+        fi
+        rm /tmp/felix-tunnel.pid
+    fi
+
+    # Start tunnel in background
+    cloudflared tunnel --url http://localhost:8787 > /tmp/felix-tunnel.log 2>&1 &
+    TUNNEL_PID=$!
+    echo $TUNNEL_PID > /tmp/felix-tunnel.pid
+
+    echo "   ⏳ Waiting for tunnel to be ready..."
+    # Wait for tunnel URL to appear in logs
+    for i in {1..30}; do
+        if grep -q "https://" /tmp/felix-tunnel.log 2>/dev/null; then
+            TUNNEL_URL=$(grep -o 'https://[^[:space:]]*\.trycloudflare\.com' /tmp/felix-tunnel.log | head -1)
+            echo "   ✅ Tunnel is ready"
+            echo "   🔗 Public URL: $TUNNEL_URL"
+            echo ""
+            echo "   📋 Configure recorder server with this URL:"
+            echo "   ssh root@158.247.206.183"
+            echo "   export WORKERS_API_URL=$TUNNEL_URL"
+            echo "   cd felix-radio/packages/recorder && docker-compose restart"
+            break
+        fi
+        if [ $i -eq 30 ]; then
+            echo "   ❌ Tunnel failed to start within 30 seconds"
+            echo "   📋 Check logs: tail -f /tmp/felix-tunnel.log"
+            kill $TUNNEL_PID 2>/dev/null
+            exit 1
+        fi
+        sleep 1
+    done
+
+    echo ""
+fi
+
 # Clean up old Next.js cache if needed (helps with code changes)
 if [ -d "apps/web/.next" ]; then
     echo "🧹 Cleaning Next.js cache for fresh start..."
@@ -153,6 +206,10 @@ echo ""
 if [ "$WITH_API" = true ]; then
     echo "   Mode: Real API (using local Wrangler server)"
     echo "   📋 API Logs: tail -f /tmp/felix-api.log"
+    if [ "$WITH_TUNNEL" = true ]; then
+        echo "   🌐 Tunnel: Active (check logs for public URL)"
+        echo "   📋 Tunnel Logs: tail -f /tmp/felix-tunnel.log"
+    fi
 else
     echo "   Mode: Mock API (using mock data)"
     echo "   💡 Tip: Remove --mock flag to run with real API server"
@@ -163,7 +220,7 @@ echo ""
 echo "=================================================="
 echo ""
 
-# Trap Ctrl+C to clean up API server
+# Trap Ctrl+C to clean up API server and tunnel
 cleanup() {
     echo ""
     echo "🛑 Stopping servers..."
@@ -172,6 +229,12 @@ cleanup() {
         kill $API_PID 2>/dev/null
         rm /tmp/felix-api.pid
         echo "   ✅ API server stopped"
+    fi
+    if [ -f "/tmp/felix-tunnel.pid" ]; then
+        TUNNEL_PID=$(cat /tmp/felix-tunnel.pid)
+        kill $TUNNEL_PID 2>/dev/null
+        rm /tmp/felix-tunnel.pid
+        echo "   ✅ Tunnel stopped"
     fi
     exit 0
 }
