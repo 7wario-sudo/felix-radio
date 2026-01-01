@@ -120,7 +120,7 @@ class ApiClient {
         station_id: data.station_id,
         station: mockStations.find((s) => s.id === data.station_id),
         program_name: data.program_name,
-        days_of_week: data.days_of_week,
+        days_of_week: JSON.stringify(data.days_of_week),
         start_time: data.start_time,
         duration_mins: data.duration_mins,
         is_active: true,
@@ -163,6 +163,7 @@ class ApiClient {
       mockSchedules[index] = {
         ...mockSchedules[index],
         ...data,
+        days_of_week: data.days_of_week ? JSON.stringify(data.days_of_week) : mockSchedules[index].days_of_week,
         updated_at: new Date().toISOString(),
       };
 
@@ -356,7 +357,7 @@ class ApiClient {
         mockRecordings[index] = {
           ...mockRecordings[index],
           stt_status: 'completed',
-          stt_text_file_path: `users/mock-user/recordings/stt_${recordingId}.txt`,
+          stt_text_path: `users/mock-user/recordings/stt_${recordingId}.txt`,
         };
       }, 3000);
 

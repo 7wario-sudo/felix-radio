@@ -110,18 +110,39 @@ recordings.get('/:id/download', async (c) => {
       return c.json({ error: 'Recording is not completed' }, 400);
     }
 
+    // Debug: Log the file path we're looking for
+    console.log('Looking for R2 file:', recording.audio_file_path);
+
     // Get the file from R2
     const file = await downloadFile(r2, recording.audio_file_path);
+
+    // Debug: Log R2 result
+    console.log('R2 get result:', file ? 'found' : 'not found');
 
     if (!file) {
       return c.json({ error: 'Recording file not found in storage' }, 404);
     }
 
+    // Convert recorded_at to KST format for filename
+    const recordedDate = new Date(recording.recorded_at);
+    // Convert to KST (UTC+9)
+    const kstOffset = 9 * 60; // 9 hours in minutes
+    const utcTime = recordedDate.getTime();
+    const kstTime = new Date(utcTime + (kstOffset * 60 * 1000));
+
+    const year = kstTime.getUTCFullYear();
+    const month = String(kstTime.getUTCMonth() + 1).padStart(2, '0');
+    const day = String(kstTime.getUTCDate()).padStart(2, '0');
+    const hour = String(kstTime.getUTCHours()).padStart(2, '0');
+    const minute = String(kstTime.getUTCMinutes()).padStart(2, '0');
+    const dateStr = `${year}${month}${day}-${hour}${minute}`;
+    const filename = `${recording.program_name}_${dateStr}.mp3`;
+
     // Return the file directly as a download
     return new Response(file.body, {
       headers: {
         'Content-Type': 'audio/mpeg',
-        'Content-Disposition': `attachment; filename="${recording.program_name}_${recording.recorded_at}.mp3"`,
+        'Content-Disposition': `attachment; filename="${filename}"`,
         'Content-Length': recording.file_size_bytes.toString(),
       },
     });

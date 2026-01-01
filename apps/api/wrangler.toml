@@ -17,7 +17,7 @@ database_id = "43b83794-5a19-459c-bacf-184c11161150"
 [[r2_buckets]]
 binding = "R2"
 bucket_name = "felix-radio-recordings"
-preview_bucket_name = "felix-radio-recordings-dev"  # For local development
+preview_bucket_name = "felix-radio-recordings-dev"
 
 # Environment variables (secrets set via wrangler secret put)
 [vars]

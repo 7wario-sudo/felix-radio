@@ -28,7 +28,7 @@ import { mockStations } from '@/lib/mock-data';
 const scheduleFormSchema = z.object({
   program_name: z.string().min(1, '프로그램 이름을 입력하세요').max(100),
   station_id: z.number({
-    required_error: '방송국을 선택하세요',
+    message: '방송국을 선택하세요',
   }),
   days_of_week: z.array(z.number()).min(1, '최소 1일을 선택하세요'),
   start_time: z.string().regex(/^([0-1][0-9]|2[0-3]):[0-5][0-9]$/, '올바른 시간 형식을 입력하세요 (HH:MM)'),

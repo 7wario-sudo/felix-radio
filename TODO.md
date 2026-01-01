@@ -84,50 +84,73 @@
   - [x] 10.6 Loading states and error handling
   - [x] 10.7 React hooks for data fetching
 
-## 🚧 In Progress / Remaining Tasks
+## ✅ Completed Tasks (Phase 2-4)
 
-### Phase 2: Backend Infrastructure (Week 2-3)
+### ✨ Phase 2: Backend Infrastructure (COMPLETE!)
 
-- [ ] **Task 11.0**: Cloudflare Workers API Setup
-  - [ ] 11.1 apps/api directory structure
-  - [ ] 11.2 Install dependencies (hono, @cloudflare/workers-types, wrangler)
-  - [ ] 11.3 wrangler.toml configuration
-  - [ ] 11.4 src/index.ts with Hono app
-  - [ ] 11.5 Test local development
+- [x] **Task 11.0**: Cloudflare Workers API Setup
+  - [x] 11.1 apps/api directory structure
+  - [x] 11.2 Install dependencies (hono, @cloudflare/workers-types, wrangler)
+  - [x] 11.3 wrangler.toml configuration
+  - [x] 11.4 src/index.ts with Hono app
+  - [x] 11.5 Test local development
 
-- [ ] **Task 12.0**: Cloudflare D1 Database
-  - [ ] 12.1 Create D1 database
-  - [ ] 12.2 Add D1 binding to wrangler.toml
-  - [ ] 12.3 migrations/0001_initial_schema.sql
-  - [ ] 12.4 Execute migration
-  - [ ] 12.5 Insert TBN 제주 station data
-  - [ ] 12.6 Test queries locally
+- [x] **Task 12.0**: Cloudflare D1 Database
+  - [x] 12.1 Create D1 database (ID: 43b83794-5a19-459c-bacf-184c11161150)
+  - [x] 12.2 Add D1 binding to wrangler.toml
+  - [x] 12.3 migrations/0001_initial_schema.sql
+  - [x] 12.4 Execute migration (production)
+  - [x] 12.5 Insert TBN 제주 station data
+  - [x] 12.6 Test queries locally
 
-- [ ] **Task 13.0**: Cloudflare R2 Storage
-- [ ] **Task 14.0**: Authentication Middleware
-- [ ] **Task 15.0**: Schedule Endpoints
-- [ ] **Task 16.0**: Recording Endpoints
-- [ ] **Task 17.0**: STT Endpoints
-- [ ] **Task 18.0**: Station & Internal Endpoints
-- [ ] **Task 19.0**: API Deployment
+- [x] **Task 13.0**: Cloudflare R2 Storage
+  - [x] 13.1 Create R2 bucket: felix-radio-recordings
+  - [x] 13.2 Add R2 binding to wrangler.toml
+  - [x] 13.3 Generate R2 access keys
+  - [x] 13.4 Signed URL generation
+  - [x] 13.5 Upload/download testing
 
-### Phase 3: Recording Server (Week 3-4)
+- [x] **Task 14.0**: Authentication Middleware
+  - [x] 14.1 Clerk JWT validation
+  - [x] 14.2 @clerk/backend integration
+  - [x] 14.3 userId extraction
+  - [x] 14.4 401 handling
+  - [x] 14.5 Internal API key auth
 
-- [ ] **Task 20.0**: Vultr VPS Provisioning
-- [ ] **Task 21.0**: Recording Server Setup
-- [ ] **Task 22.0**: Configuration & Logging
-- [ ] **Task 23.0**: Workers API Client
-- [ ] **Task 24.0**: ffmpeg Recording Implementation
-- [ ] **Task 25.0**: R2 Storage Client
-- [ ] **Task 26.0**: Schedule Polling & Execution
-- [ ] **Task 27.0**: Whisper STT Integration
-- [ ] **Task 28.0**: Server Entry Point & Testing
+- [x] **Task 15.0**: Schedule Endpoints (src/routes/schedules.ts)
+- [x] **Task 16.0**: Recording Endpoints (src/routes/recordings.ts)
+- [x] **Task 17.0**: STT Endpoints
+- [x] **Task 18.0**: Station & Internal Endpoints (src/routes/stations.ts, internal.ts)
+- [x] **Task 19.0**: API Deployment (https://felix-radio-api.7wario.workers.dev)
 
-### Phase 4: Integration & STT (Week 4-5)
+### ✨ Phase 3: Recording Server (COMPLETE!)
 
-- [ ] **Task 29.0**: Frontend-Backend Integration
-- [ ] **Task 30.0**: End-to-End Recording Flow
-- [ ] **Task 31.0**: STT Conversion Flow
+- [x] **Task 20.0**: Vultr VPS Provisioning (Seoul: 158.247.206.183)
+- [x] **Task 21.0**: Recording Server Setup (Docker + ffmpeg)
+- [x] **Task 22.0**: Configuration & Logging
+- [x] **Task 23.0**: Workers API Client (Dual URL fallback)
+- [x] **Task 24.0**: ffmpeg Recording Implementation
+- [x] **Task 25.0**: R2 Storage Client (@aws-sdk/client-s3)
+- [x] **Task 26.0**: Schedule Polling & Execution (node-cron, 1min interval)
+- [x] **Task 27.0**: Whisper STT Integration (OpenAI API)
+- [x] **Task 28.0**: Server Entry Point & Testing (Docker running)
+
+### ✨ Phase 4: Integration & STT (COMPLETE!)
+
+- [x] **Task 29.0**: Frontend-Backend Integration
+  - [x] 29.1 Real API integration (removed mock mode)
+  - [x] 29.2 Clerk token authentication
+  - [x] 29.3 Schedule CRUD end-to-end
+  - [x] 29.4 Recording list/detail with real data
+  - [x] 29.5 Error handling with toast notifications
+  - [x] 29.6 Loading states for async operations
+
+## 🚧 Remaining Tasks
+
+### Phase 4: Integration & STT (In Progress)
+
+- [ ] **Task 30.0**: End-to-End Recording Flow Testing
+- [ ] **Task 31.0**: STT Conversion Flow Testing
 - [ ] **Task 32.0**: Error Handling & Edge Cases
 - [ ] **Task 33.0**: Performance Optimization
 
@@ -140,11 +163,16 @@
 - [ ] **Task 38.0**: User Acceptance Testing
 - [ ] **Task 39.0**: Launch Preparation
 
-## 📝 Notes
+## 📝 Status Summary
 
-- **Current Status**: Completed Phase 1 foundation (Tasks 1.0-7.0)
-- **Next Steps**: Complete remaining Phase 1 UI tasks (8.0-10.0)
+- **Overall Progress**: Phase 1-3 Complete, Phase 4 In Progress (Task 29.0 ✅)
+- **Current Status**: Production Deployed & Running
 - **Repository**: https://github.com/7wario-sudo/felix-radio
+- **Production API**: https://felix-radio-api.7wario.workers.dev (✅ Healthy)
+- **Recording Server**: Vultr VPS 158.247.206.183 (✅ Running)
+- **Database**: D1 (felix-radio-db: 43b83794-5a19-459c-bacf-184c11161150)
+- **Storage**: R2 (felix-radio-recordings)
+- **Last Updated**: 2026-01-01
 - **Detailed Plan**: See `/Users/kimsungwook/.claude/plans/fizzy-inventing-river.md`
 
 ## 🔑 Key Files Created

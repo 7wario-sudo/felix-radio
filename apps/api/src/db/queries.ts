@@ -172,9 +172,12 @@ export async function getRecordings(
     .prepare(`
       SELECT
         r.*,
+        rs.id as station_id_join,
         rs.name as station_name,
         rs.stream_url as station_stream_url,
-        rs.is_active as station_is_active
+        rs.is_active as station_is_active,
+        rs.created_at as station_created_at,
+        rs.updated_at as station_updated_at
       FROM recordings r
       LEFT JOIN radio_stations rs ON r.station_id = rs.id
       WHERE r.user_id = ?
@@ -184,7 +187,32 @@ export async function getRecordings(
     .bind(userId, limit, offset)
     .all();
 
-  return results as unknown as Recording[];
+  // Transform flat results to include nested station object
+  return results.map((row: any) => {
+    const recording: any = { ...row };
+
+    // Create station object if station data exists
+    if (row.station_name) {
+      recording.station = {
+        id: row.station_id,
+        name: row.station_name,
+        stream_url: row.station_stream_url,
+        is_active: row.station_is_active === 1,
+        created_at: row.station_created_at,
+        updated_at: row.station_updated_at,
+      };
+    }
+
+    // Remove flat station fields
+    delete recording.station_id_join;
+    delete recording.station_name;
+    delete recording.station_stream_url;
+    delete recording.station_is_active;
+    delete recording.station_created_at;
+    delete recording.station_updated_at;
+
+    return recording;
+  }) as Recording[];
 }
 
 export async function getRecordingById(
@@ -193,11 +221,50 @@ export async function getRecordingById(
   userId: string
 ): Promise<Recording | null> {
   const result = await db
-    .prepare('SELECT * FROM recordings WHERE id = ? AND user_id = ?')
+    .prepare(`
+      SELECT
+        r.*,
+        rs.id as station_id_join,
+        rs.name as station_name,
+        rs.stream_url as station_stream_url,
+        rs.is_active as station_is_active,
+        rs.created_at as station_created_at,
+        rs.updated_at as station_updated_at
+      FROM recordings r
+      LEFT JOIN radio_stations rs ON r.station_id = rs.id
+      WHERE r.id = ? AND r.user_id = ?
+    `)
     .bind(recordingId, userId)
     .first();
 
-  return result as Recording | null;
+  if (!result) {
+    return null;
+  }
+
+  const row: any = result;
+  const recording: any = { ...row };
+
+  // Create station object if station data exists
+  if (row.station_name) {
+    recording.station = {
+      id: row.station_id,
+      name: row.station_name,
+      stream_url: row.station_stream_url,
+      is_active: row.station_is_active === 1,
+      created_at: row.station_created_at,
+      updated_at: row.station_updated_at,
+    };
+  }
+
+  // Remove flat station fields
+  delete recording.station_id_join;
+  delete recording.station_name;
+  delete recording.station_stream_url;
+  delete recording.station_is_active;
+  delete recording.station_created_at;
+  delete recording.station_updated_at;
+
+  return recording as Recording;
 }
 
 export async function deleteRecording(

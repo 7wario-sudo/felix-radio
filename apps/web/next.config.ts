@@ -11,11 +11,6 @@ const nextConfig: NextConfig = {
   images: {
     unoptimized: true,
   },
-
-  // Ensure ESLint runs during builds
-  eslint: {
-    dirs: ['app', 'components', 'lib'],
-  },
 };
 
 export default nextConfig;
