@@ -12,12 +12,12 @@ if [ ! -f "package.json" ]; then
 fi
 
 # Parse command line arguments
-WITH_API=false
+WITH_API=true  # Default to using real API
 SKIP_INSTALL=false
 for arg in "$@"; do
     case $arg in
-        --with-api)
-            WITH_API=true
+        --mock)
+            WITH_API=false
             shift
             ;;
         --skip-install)
@@ -26,7 +26,7 @@ for arg in "$@"; do
             ;;
         *)
             echo "❌ Unknown argument: $arg"
-            echo "Usage: ./scripts/dev-start.sh [--with-api] [--skip-install]"
+            echo "Usage: ./scripts/dev-start.sh [--mock] [--skip-install]"
             exit 1
             ;;
     esac
@@ -156,7 +156,7 @@ if [ "$WITH_API" = true ]; then
     echo "   📋 API Logs: tail -f /tmp/felix-api.log"
 else
     echo "   Mode: Mock API (using mock data)"
-    echo "   💡 Tip: Use --with-api flag to run with real API server"
+    echo "   💡 Tip: Remove --mock flag to run with real API server"
 fi
 echo ""
 echo "   Press Ctrl+C to stop the server"

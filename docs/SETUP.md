@@ -240,41 +240,41 @@ bucket_name = "felix-radio-recordings"
 
 ## 5. Running Locally
 
-### 5.1 Quick Start (Mock Mode)
+### 5.1 Quick Start (Real API - Default)
 
 The easiest way to start local development is using the provided scripts:
 
 ```bash
-# Start frontend with mock data (no API server needed)
+# Start frontend + API server (default mode)
 ./scripts/dev-start.sh
 
-# Access application
-# http://localhost:3000
+# This will:
+# 1. Start Wrangler API server on http://localhost:8787
+# 2. Wait for API to be ready
+# 3. Start Next.js on http://localhost:3000
 ```
 
 This mode is ideal for:
-- Frontend UI/UX development
-- Component styling and layout
-- Testing with predefined mock data
-- Quick iterations without backend setup
+- Full-stack development
+- Testing actual API integration
+- Working with real database and storage
+- End-to-end feature development
 
 **Stop servers:**
 ```bash
 ./scripts/dev-stop.sh
 ```
 
-### 5.2 Full Stack Development (Real API)
+### 5.2 Mock Mode (Optional)
 
-To develop with the actual API server:
+To develop with mock data only (no API server needed):
 
 ```bash
-# Start frontend + API server
-./scripts/dev-start.sh --with-api
+# Start frontend with mock data
+./scripts/dev-start.sh --mock
 
-# This will:
-# 1. Start Wrangler API server on http://localhost:8787
-# 2. Wait for API to be ready
-# 3. Start Next.js on http://localhost:3000 (with mock mode disabled)
+# Access application
+# http://localhost:3000
 ```
 
 **Check API logs:**
@@ -316,17 +316,19 @@ To test recording functionality, use the production Vultr server or mock the rec
 
 ### 5.4 Development Workflow
 
-**Frontend Development (Mock Mode):**
-- Fast hot reload
-- No backend dependencies
-- Predefined data for testing UI
-- Clerk authentication with test credentials
-
-**Frontend Development (Real API):**
-- Use `./scripts/dev-start.sh --with-api`
+**Frontend Development (Real API - Default):**
+- Use `./scripts/dev-start.sh` (default mode)
 - Test actual API integration
 - Clerk authentication with local D1 database
 - Create/modify real data
+- Fast hot reload with real backend
+
+**Frontend Development (Mock Mode - Optional):**
+- Use `./scripts/dev-start.sh --mock`
+- No backend dependencies
+- Predefined data for testing UI
+- Clerk authentication with test credentials
+- Fastest iteration for UI-only changes
 
 **API Development:**
 - Wrangler uses Miniflare for local D1/R2 simulation
@@ -338,8 +340,8 @@ To test recording functionality, use the production Vultr server or mock the rec
 
 | Mode | Command | Use Case |
 |------|---------|----------|
-| Mock | `./scripts/dev-start.sh` | Fast UI development |
-| Real API | `./scripts/dev-start.sh --with-api` | Full-stack development |
+| Real API (Default) | `./scripts/dev-start.sh` | Full-stack development |
+| Mock | `./scripts/dev-start.sh --mock` | Fast UI-only development |
 | API Only | `cd apps/api && npm run dev` | API testing |
 | Frontend Only | `cd apps/web && npm run dev` | With custom API URL |
 
