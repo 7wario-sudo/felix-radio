@@ -165,7 +165,10 @@ if [ "$WITH_TUNNEL" = true ]; then
 
             # Automatically configure recorder server with dual URL
             echo "   🔧 Configuring recorder server..."
-            ssh root@158.247.206.183 "echo '# Workers API Configuration
+
+            # Create temporary .env file locally with current tunnel URL
+            cat > /tmp/felix-recorder.env << EOF
+# Workers API Configuration
 # Primary: Local tunnel (auto-detected, preferred)
 WORKERS_API_URL_PRIMARY=$TUNNEL_URL
 # Fallback: Production (always available)
@@ -184,10 +187,16 @@ R2_ENDPOINT=https://ed20098766cafda6a8821fcc3be0ac43.r2.cloudflarestorage.com
 
 # Configuration
 TZ=Asia/Seoul
-LOG_LEVEL=info' > felix-radio/packages/recorder/.env" && echo "   ✅ Recorder .env updated (Primary: Local, Fallback: Production)"
+LOG_LEVEL=info
+EOF
+
+            # Upload .env file to recorder server
+            scp -q /tmp/felix-recorder.env root@158.247.206.183:felix-radio/packages/recorder/.env
+            rm /tmp/felix-recorder.env
+            echo "   ✅ Recorder .env updated to $TUNNEL_URL"
 
             echo "   🔄 Restarting recorder service..."
-            ssh root@158.247.206.183 "cd felix-radio/packages/recorder && docker-compose down && docker-compose up -d" > /dev/null 2>&1 && echo "   ✅ Recorder service restarted"
+            ssh root@158.247.206.183 "cd felix-radio/packages/recorder && docker-compose down && docker-compose up -d" > /dev/null 2>&1 && echo "   ✅ Recorder service restarted with new tunnel URL"
 
             echo ""
             echo "   📋 Recorder will auto-detect and use local tunnel"
